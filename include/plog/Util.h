@@ -62,9 +62,11 @@
 #ifdef _WIN32
 #   include <plog/WinApi.h>
 #   include <time.h>
-#   include <sys/timeb.h>
+    #if  !defined(__PIN__)
+        #   include <sys/timeb.h>
+        #   include <share.h>
+    #endif
 #   include <io.h>
-#   include <share.h>
 #else
 #   include <unistd.h>
 #   include <sys/time.h>
@@ -130,7 +132,7 @@ namespace plog
             ::localtime_s(time, t);
 #elif defined(_WIN32) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
             *t = *::localtime(time);
-#elif defined(_WIN32)
+#elif defined(_WIN32) &&  !defined(__PIN__)
             ::localtime_s(t, time);
 #else
             ::localtime_r(time, t);
@@ -143,14 +145,14 @@ namespace plog
             ::gmtime_s(time, t);
 #elif defined(_WIN32) && defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
             *t = *::gmtime(time);
-#elif defined(_WIN32)
+#elif defined(_WIN32) &&  !defined(__PIN__)
             ::gmtime_s(t, time);
 #else
             ::gmtime_r(time, t);
 #endif
         }
 
-#ifdef _WIN32
+#if defined(_WIN32) &&  !defined(__PIN__)
         typedef timeb Time;
 
         inline void ftime(Time* t)
@@ -266,6 +268,8 @@ namespace plog
         int retval = vsnwprintf_s(str, bufferCharCount, format, ap);
 #elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
         int retval = _vsnwprintf(str, bufferCharCount, format, ap);
+#elif defined(__PIN__)
+        int retval = vswprintf(str, bufferCharCount, format, ap);
 #else
         int retval = _vsnwprintf_s(str, bufferCharCount, charCount, format, ap);
 #endif
@@ -429,8 +433,10 @@ namespace plog
             {
 #if defined(_WIN32) && (defined(__BORLANDC__) || defined(__MINGW32__))
                 m_file = ::_wsopen(toWide(fileName).c_str(), _O_CREAT | _O_WRONLY | _O_BINARY | _O_NOINHERIT, SH_DENYWR, _S_IREAD | _S_IWRITE);
-#elif defined(_WIN32)
+#elif defined(_WIN32) && !defined(__PIN__)
                 ::_wsopen_s(&m_file, toWide(fileName).c_str(), _O_CREAT | _O_WRONLY | _O_BINARY | _O_NOINHERIT, _SH_DENYWR, _S_IREAD | _S_IWRITE);
+#elif defined(__PIN__)
+                m_file = ::open(toNarrow(fileName, 0).c_str(), _O_CREAT | _O_WRONLY | _O_BINARY);
 #elif defined(O_CLOEXEC)
                 m_file = ::open(fileName.c_str(), O_CREAT | O_APPEND | O_WRONLY | O_CLOEXEC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 #else
@@ -443,7 +449,7 @@ namespace plog
             {
                 return m_file != -1 ? static_cast<size_t>(
 #ifdef _WIN32
-                    ::_write(m_file, buf, static_cast<unsigned int>(count))
+                    ::_write(m_file, (void *)buf, static_cast<unsigned int>(count))
 #else
                     ::write(m_file, buf, count)
 #endif
@@ -484,10 +490,10 @@ namespace plog
 
             static int unlink(const nstring& fileName)
             {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__PIN__)
                 return ::_wunlink(toWide(fileName).c_str());
 #else
-                return ::unlink(fileName.c_str());
+                return ::unlink(toNarrow(fileName, 0).c_str());
 #endif
             }
 

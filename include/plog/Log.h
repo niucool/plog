@@ -128,7 +128,7 @@
 // Main logging macros - can be changed later to point at macros for a different logging package
 
 #define LOG_(instanceId, severity)      IF_PLOG_(instanceId, severity) (*plog::get<instanceId>()) += plog::Record(severity, PLOG_GET_FUNC(), __LINE__, PLOG_GET_FILE(), PLOG_GET_THIS(), instanceId).ref()
-#define LOG(severity)                   PLOG_(PLOG_DEFAULT_INSTANCE_ID, severity)
+#define LOGS(severity)                   PLOG_(PLOG_DEFAULT_INSTANCE_ID, severity)
 
 #define LOG_VERBOSE                     PLOG(plog::verbose)
 #define LOG_DEBUG                       PLOG(plog::debug)
