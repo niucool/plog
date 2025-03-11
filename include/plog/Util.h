@@ -436,7 +436,7 @@ namespace plog
 #elif defined(_WIN32) && !defined(__PIN__)
                 ::_wsopen_s(&m_file, toWide(fileName).c_str(), _O_CREAT | _O_WRONLY | _O_BINARY | _O_NOINHERIT, _SH_DENYWR, _S_IREAD | _S_IWRITE);
 #elif defined(__PIN__)
-                m_file = ::open(toNarrow(fileName, 0).c_str(), _O_CREAT | _O_WRONLY | _O_BINARY);
+                m_file = ::open(fileName.c_str(), _O_CREAT | _O_WRONLY | _O_BINARY);
 #elif defined(O_CLOEXEC)
                 m_file = ::open(fileName.c_str(), O_CREAT | O_APPEND | O_WRONLY | O_CLOEXEC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 #else
@@ -493,7 +493,7 @@ namespace plog
 #if defined(_WIN32) && !defined(__PIN__)
                 return ::_wunlink(toWide(fileName).c_str());
 #else
-                return ::unlink(toNarrow(fileName, 0).c_str());
+                return ::unlink(fileName.c_str());
 #endif
             }
 

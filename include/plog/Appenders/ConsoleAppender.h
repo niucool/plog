@@ -16,7 +16,7 @@ namespace plog
     class PLOG_LINKAGE_HIDDEN ConsoleAppender : public IAppender
     {
     public:
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__PIN__)
 #   ifdef _MSC_VER
 #       pragma warning(suppress: 26812) //  Prefer 'enum class' over 'enum'
 #   endif
@@ -48,7 +48,7 @@ namespace plog
     protected:
         void writestr(const util::nstring& str)
         {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__PIN__)
             if (m_isatty)
             {
                 const std::wstring& wstr = util::toWide(str);
